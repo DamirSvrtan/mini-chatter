@@ -2,103 +2,61 @@ require 'rack'
 require 'pry-debugger'
 require 'rack/websocket'
 require 'haml'
+require 'json'
 
-class SocketzApp < Rack::WebSocket::Application
-  def on_open(env)
-    connection = @websocket_handler.connection
-    SocketChannels.add_connection(connection)
+class SocketApp < Rack::WebSocket::Application
+  def on_open env
+    ChatChannel.connections << connection
+    puts "Connected: NUMBER OF CONNECTIONS #{ChatChannel.connections.count}"
   end
 
-  def on_close(env)
-    connection = @websocket_handler.connection
-    SocketChannels.remove_connection(connection)
+  def on_close env
+    ChatChannel.connections.delete(connection)
+    msg = {
+      username: username(env),
+      message: 'just disconnected'
+    }
+    ChatChannel.connections.first.send msg.to_json
+    puts "Disconnected: NUMBER OF CONNECTIONS #{ChatChannel.connections.count}"
   end
 
-  def on_message(env, msg)
-    channel = SocketChannels.channels.first
-    channel.broadcast msg
+  def on_message env, msg
+    ChatChannel.broadcast msg
   end
 
-  def on_error(env, error)
-    puts "Error occured: " + error.message
-  end
-end
-
-class HttpApp
-  def call env
-    template = File.read('index.haml')
-    text = Haml::Engine.new(template).render
-    [200, {"Content-Type" => "text/html"}, [File.read('index.html')]]
-  end
-end
-
-class SocketChannels
-  @@channels = []
-
-  def self.add_connection(connection)
-    env = connection.socket.request.env
-    channel_name = env['PATH_INFO'].sub('/', '')
-
-    if SocketChannels.has_channel?(channel_name)
-      SocketChannels.get_channel(channel_name).connections << connection
-    else
-      socket_channel = SocketChannel.new(channel_name)
-      socket_channel.connections << connection
-      SocketChannels.push(socket_channel)
-    end
+  def connection
+    @websocket_handler.instance_variable_get("@connection")
   end
 
-  def self.remove_connection(connection)
-    env = connection.socket.request.env
-    channel_name = env['PATH_INFO'].sub('/', '')
-    SocketChannels.get_channel(channel_name).connections.delete(connection)
-  end
-
-  def self.channels
-    @@channels
-  end
-
-  def self.push(channel)
-    if has_channel?(channel.name)
-      raise "Can't add the same channel twice!"
-    else
-      @@channels << channel
-    end
-  end
-
-  def self.has_channel?(name)
-    @@channels.any? {|channel| channel.name == name}
-  end
-
-  def self.get_channel(name)
-    @@channels.find {|channel| channel.name == name}
+  def username(env)
+    Rack::Request.new(env).params['username']
   end
 end
 
-class SocketChannel 
-  attr_reader :name
-  attr_accessor :connections
+class ChatChannel
+  @@connections = []
 
-  def initialize(name)
-    @name = name
-    self.connections = []
+  def self.connections
+    @@connections
   end
 
-  def broadcast(msg)
+  def self.broadcast msg
     connections.each do |connection|
       connection.send msg
     end
   end
 end
 
-class HttpSocketz
+class ChatApp
   def call(env)
     if env['HTTP_UPGRADE'] == "websocket"
-      SocketzApp.new.call(env)
+      SocketApp.new.call(env)
     else
-      HttpApp.new.call(env)
+      template = File.read('index.haml')
+      text = Haml::Engine.new(template).render
+      [200, {"Content-Type" => "text/html"}, [File.read('index.html')]]
     end
   end
 end
 
-run HttpSocketz.new
+run ChatApp.new
