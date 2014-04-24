@@ -42,34 +42,31 @@
 
     var connection = new WebSocket('ws://'+ location.host + '/?username=' + username);
 
-    connection.onopen = function(e){
-      var message = {
-        'username': username,
-        'message': 'just connected'
-      };
-      connection.send(JSON.stringify(message));
-    }
+    connection.onopen = function(e){}
+    connection.onclose = function(e){}
 
     connection.onmessage = function(e){
       var response = JSON.parse(e.data);
-      // alert(JSON.stringify(response))
       appendToMessageBox(response.username, response.message);
     }
 
     document.forms["new-message"].onsubmit = function(){
         var messageText = document.getElementById("new-message-content");
-        var newMessage = {
-          'username': username,
-          'message': messageText.value
-        };
-        connection.send(JSON.stringify(newMessage));
-        messageText.value ='';
+        if(messageText.value != ''){
+          var newMessage = {
+            'username': username,
+            'message': messageText.value
+          };
+          connection.send(JSON.stringify(newMessage));
+          messageText.value ='';
+        }
         return false;
     }
 
     function appendToMessageBox(name, message){
         var newContent = document.createElement('h4');
         var nameLabel = document.createElement('span');
+
         if(message == "just connected"){
           var labelClass = 'label label-success';
         }else if(message == "just disconnected"){

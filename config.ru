@@ -7,17 +7,14 @@ require 'json'
 class SocketApp < Rack::WebSocket::Application
   def on_open env
     ChatChannel.connections << connection
-    puts "Connected: NUMBER OF CONNECTIONS #{ChatChannel.connections.count}"
+    msg = { username: username(env), message: 'just connected' }
+    ChatChannel.broadcast msg.to_json
   end
 
   def on_close env
     ChatChannel.connections.delete(connection)
-    msg = {
-      username: username(env),
-      message: 'just disconnected'
-    }
+    msg = { username: username(env), message: 'just disconnected' }
     ChatChannel.broadcast msg.to_json
-    puts "Disconnected: NUMBER OF CONNECTIONS #{ChatChannel.connections.count}"
   end
 
   def on_message env, msg
