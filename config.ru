@@ -16,7 +16,7 @@ class SocketApp < Rack::WebSocket::Application
       username: username(env),
       message: 'just disconnected'
     }
-    ChatChannel.connections.first.send msg.to_json
+    ChatChannel.broadcast msg.to_json
     puts "Disconnected: NUMBER OF CONNECTIONS #{ChatChannel.connections.count}"
   end
 

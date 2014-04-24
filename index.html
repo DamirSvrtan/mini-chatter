@@ -17,7 +17,6 @@
             <button type="submit" class="btn btn-default">Submit</button>
           </form>
         </div>
-        <button id='close-socket' class="btn btn-danger">CLOSE SOCKET</button>
       </div>
     </div>
   </div>
@@ -57,17 +56,6 @@
       appendToMessageBox(response.username, response.message);
     }
 
-    connection.onclose = function(){
-      // var message = {
-      //   'username': username,
-      //   'message': 'DISCONNECTED'
-      // };
-      // connection.send(JSON.stringify(message));
-    }
-
-    document.getElementById('close-socket').onclick = function(){
-      connection.close()
-    }
     document.forms["new-message"].onsubmit = function(){
         var messageText = document.getElementById("new-message-content");
         var newMessage = {
@@ -84,6 +72,8 @@
         var nameLabel = document.createElement('span');
         if(message == "just connected"){
           var labelClass = 'label label-success';
+        }else if(message == "just disconnected"){
+          var labelClass = 'label label-danger';
         }else{
           var labelClass = 'label label-primary';
         }
