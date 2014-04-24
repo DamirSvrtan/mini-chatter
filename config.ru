@@ -7,21 +7,14 @@ class SocketzApp < Rack::WebSocket::Application
   def on_open(env)
     connection = @websocket_handler.connection
     SocketChannels.add_connection(connection)
-    puts "Number of channels: #{SocketChannels.channels.count}"
-    puts "Number of connections: #{SocketChannels.channels.first.connections.count}"
-    puts "Client connected"
   end
 
   def on_close(env)
     connection = @websocket_handler.connection
     SocketChannels.remove_connection(connection)
-    puts "Number of channels: #{SocketChannels.channels.count}"
-    puts "Number of connections: #{SocketChannels.channels.first.connections.count}"
-    puts "Client disconnected"
   end
 
   def on_message(env, msg)
-    puts "Received message: " + msg
     channel = SocketChannels.channels.first
     channel.broadcast msg
   end
@@ -33,8 +26,8 @@ end
 
 class HttpApp
   def call env
-    # template = File.read('index.haml')
-    # text = Haml::Engine.new(template).render
+    template = File.read('index.haml')
+    text = Haml::Engine.new(template).render
     [200, {"Content-Type" => "text/html"}, [File.read('index.html')]]
   end
 end
@@ -96,7 +89,6 @@ class SocketChannel
       connection.send msg
     end
   end
-
 end
 
 class HttpSocketz

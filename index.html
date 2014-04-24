@@ -1,46 +1,11 @@
 <html>
   <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
-<!--   <script>
-    if (!'WebSocket' in window){
-      alert("WebSockets are not supported.")
-    }
-
-    var connection = new WebSocket('ws://'+ location.host + '/socketz');
-    
-    // alert(connection.readyState)
-
-    connection.onopen = function(){
-      /*Send a small message to the console once the connection is established */
-      var message = {
-        'name': 'bill murray',
-        'comment': 'No one will ever believe you'
-      };
-      connection.send(JSON.stringify(message));
-
-      alert('Connection open!');
-    }
-
-    connection.onclose = function(){
-      alert('Connection closed');
-    }
-
-    connection.onerror = function(error){
-      alert('Error detected: ' + error);
-    }
-
-    connection.onmessage = function(e){
-      var server_message = e.data;
-      alert('Server says: ' + server_message);
-      }
-  </script> -->
-</html>
 
 <body>
   <div class="container">
     <div class="row">
       <div class="col-lg-8 col-lg-offset-2">
         <h1> Mini Chatter </h1>
-        <h3> Conversation </h3>
         <div id="messages" class="row-fluid">
         </div>
         <div class="row-fluid">
@@ -60,7 +25,7 @@
     #messages{
       height: 300px;
       overflow: auto; scroll;
-      background-color: grey;
+      background-color: #989898;
       padding-left: 10px;
       margin-bottom: 10px;
       -webkit-border-radius: 10px;
@@ -73,33 +38,64 @@
 
   </style>
   <script>
+    var username = "User_" + Math.floor((Math.random()*1000)+1);
+
+    var connection = new WebSocket('ws://'+ location.host + '/chat');
+
+    connection.onopen = function(e){
+      var message = {
+        'username': username,
+        'message': 'just connected'
+      };
+      connection.send(JSON.stringify(message));
+    }
+
+    connection.onmessage = function(e){
+      var response = JSON.parse(e.data);
+      appendToMessageBox(response.username, response.message);
+    }
+
+    connection.onclose = function(){
+      var message = {
+        'username': username,
+        'message': 'DISCONNECTED'
+      };
+      connection.send(JSON.stringify(message));
+    }
+
     document.forms["new-message"].onsubmit = function(){
-        var content = document.getElementById("new-message-content");
-        // alert(content.value);
-        
+        var messageText = document.getElementById("new-message-content");
+        var newMessage = {
+          'username': username,
+          'message': messageText.value
+        };
+        connection.send(JSON.stringify(newMessage));
+        messageText.value ='';
+        return false;
+    }
 
+    function appendToMessageBox(name, message){
         var newContent = document.createElement('h4');
-        var newLabel = document.createElement('span');
-        newLabel.className = "label label-primary";
-        newLabel.innerHTML = "Damir";
+        var nameLabel = document.createElement('span');
+        if(message == "just connected"){
+          var labelClass = 'label label-success';
+        }else{
+          var labelClass = 'label label-primary';
+        }
 
-        var newCont = document.createElement('span');
-        newCont.className = "submited-message"
-        newCont.innerHTML = content.value
+        nameLabel.className = labelClass;
+        nameLabel.innerHTML = name;
 
-        newContent.appendChild(newLabel)
-        newContent.appendChild(newCont)
+        var messageContent = document.createElement('span');
+        messageContent.className = "submited-message"
+        messageContent.innerHTML = message;
 
-        content.value ='';
+        newContent.appendChild(nameLabel)
+        newContent.appendChild(messageContent)
 
-        // document.getElementById("messages").appendChild(newLabel);
         document.getElementById("messages").appendChild(newContent);
         var objDiv = document.getElementById("messages");
         objDiv.scrollTop = objDiv.scrollHeight;
-        return false;
     }
   </script>
-
-
-
-
+</html>
