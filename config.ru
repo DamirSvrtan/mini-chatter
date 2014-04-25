@@ -6,13 +6,13 @@ require 'slim'
 class SocketApp < Rack::WebSocket::Application
   def on_open env
     ChatChannel.connections << connection
-    msg = { username: username(env), message: 'just connected' }
+    msg = { username: username(env), message: 'connected' }
     ChatChannel.broadcast msg.to_json
   end
 
   def on_close env
     ChatChannel.connections.delete(connection)
-    msg = { username: username(env), message: 'just disconnected' }
+    msg = { username: username(env), message: 'disconnected' }
     ChatChannel.broadcast msg.to_json
   end
 

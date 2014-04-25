@@ -1,5 +1,19 @@
 html
   link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet"
+  css:
+    #message-box{
+      height: 300px;
+      overflow: auto; scroll;
+      background-color: #989898;
+      padding-left: 10px;
+      margin-bottom: 10px;
+      -webkit-border-radius: 10px;
+      -moz-border-radius: 10px;
+      border-radius: 10px;
+    }
+    .submited-message{
+      padding-left: 10px;
+    }
   body
     .container
       .row
@@ -40,7 +54,7 @@ html
         var nameLabel = document.createElement('span');
         var labelClass = 'label label-';
 
-        if(message == "just connected"){
+        if(message == "connected"){
           labelClass += 'success';
         }else if(message == "disconnected"){
           labelClass += 'danger';
@@ -61,18 +75,4 @@ html
         var messageBox = document.getElementById("message-box");
         messageBox.appendChild(newContent);
         messageBox.scrollTop = messageBox.scrollHeight;
-    }
-  css:
-    #message-box{
-      height: 300px;
-      overflow: auto; scroll;
-      background-color: #989898;
-      padding-left: 10px;
-      margin-bottom: 10px;
-      -webkit-border-radius: 10px;
-      -moz-border-radius: 10px;
-      border-radius: 10px;
-    }
-    .submited-message{
-      padding-left: 10px;
     }
