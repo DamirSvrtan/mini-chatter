@@ -1,8 +1,7 @@
 require 'rack'
-require 'pry-debugger'
 require 'rack/websocket'
-require 'haml'
 require 'json'
+require 'slim'
 
 class SocketApp < Rack::WebSocket::Application
   def on_open env
@@ -49,9 +48,7 @@ class ChatApp
     if env['HTTP_UPGRADE'] == "websocket"
       SocketApp.new.call(env)
     else
-      template = File.read('index.haml')
-      text = Haml::Engine.new(template).render
-      [200, {"Content-Type" => "text/html"}, [File.read('index.html')]]
+      [200, {"Content-Type" => "text/html"}, [Slim::Template.new('index.slim').render]]
     end
   end
 end
